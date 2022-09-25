@@ -4,7 +4,7 @@ RUN apk add --no-cache musl-dev
 WORKDIR /opt/monie
 
 # copy over your manifests
-COPY ./Cargo.lock ./Cargo.lock
+#COPY ./Cargo.lock ./Cargo.lock
 COPY ./Cargo.toml ./Cargo.toml
 
 RUN cargo build --release

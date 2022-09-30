@@ -21,6 +21,7 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
 
     let mut listenfd = ListenFd::from_env();
+    println!("Hello after listenfd = ");
     let mut server = HttpServer::new(|| App::new()
         .service(feed::feed)
         .service(auth));
@@ -29,10 +30,14 @@ async fn main() -> std::io::Result<()> {
         None => {
             let host = env::var("HOST").expect("Please set host in .env");
             let port = env::var("PORT").expect("Please set port in .env");
+
             server.bind(format!("{}:{}", host, port))?
         }
     };
+    println!("Hello after server = ");
+
     server.run().await
+
 }
 
 

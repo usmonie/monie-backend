@@ -1,8 +1,7 @@
+use diesel::Queryable;
 use serde::{Serialize, Deserialize};
 
-use crate::db;
-
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Queryable)]
 pub struct Story {
     pub id: String,
     pub author_id: String,

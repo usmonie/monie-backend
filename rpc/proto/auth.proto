@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package authentication;
+
+service Authentication {
+  rpc GeneratePrivateKey(PublicKey) returns (PublicKey) {}
+  rpc LoginWithPhoneNumber(PhoneNumber) returns (CodeResult) {}
+  rpc LoginAnonymously(Anonymous) returns (AnonymousResult) {}
+}
+
+message PublicKey {
+  string x = 1;
+  string y = 2;
+}
+
+message PhoneNumber {
+  string phone = 1;
+}
+
+message Anonymous {
+  string username = 1;
+  string password = 2;
+}
+
+message CodeResult {
+  string code = 1;
+}
+
+message AnonymousResult {
+  bool alreadyExist = 1;
+}

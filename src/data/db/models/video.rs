@@ -1,6 +1,7 @@
+use diesel::Queryable;
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Queryable)]
 #[serde(rename_all = "camelCase")]
 pub struct Video {
     pub id: String,
@@ -14,4 +15,3 @@ pub struct Video {
     pub repeatable: bool,
     pub duration: u64,
 }
-

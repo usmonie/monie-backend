@@ -1,24 +1,41 @@
 [package]
-name = "monie"
+name = "monie-backend"
 version = "0.1.0"
 edition = "2021"
+authors=["Nie <nie@usmonie.com>"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[target.aarch64-apple-darwin]
+rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/bin/zld"]
+
+[workspace]
+members = [
+    "cryptography",
+    "authentication",
+    "rpc"
+]
 
 [dependencies]
-tokio = { version = "1.5.0", features = ["full"] }
-select = "0.5.0"
-serde = { version = "1.0.125" }
-serde_json = "1.0.64"
-erased-serde = "0.3"
-actix-web = "4.0.0-rc.3"
+actix = "0.13.0"
+actix-rt = "2.7.0"
+actix-web = "4"
+actix-web-actors = "4.1.0"
+async-trait = "0.1.59"
+base64 = "0.20.0-alpha.1"
+bincode = "1.3.3"
+bytes = "1.2.1"
+cryptography = { path = "cryptography", version = "0.1.0"}
 diesel = { version = "2.0.0", features = ["postgres", "r2d2", "uuid", "chrono"] }
 diesel_migrations = "2.0.0"
-actix-rt = "2.7.0"
-chrono = { version = "0.4", features = ["serde"] }
 dotenv = "0.15.0"
-env_logger = "0.9.0"
-lazy_static = "1.4"
-listenfd = "1.0.0"
-r2d2 = "0.8"
-uuid = { version = "1.1.2", features = ["serde", "v4"] }
+erased-serde = "0.3"
+futures = "0.3.25"
+openssl = { version = "0.10" }
+rand = "0.8.5"
+rug = "1.17.0"
+monie-rpc = { path = "rpc", version = "0.1.0"}
+tonic = "0.8.3"
+tokio = { version = "1.5.0", features = ["full"] }
+tokio-stream = "0.1.11"
+serde = { version = "1.0.125" }
+serde_json = "1.0.64"
+uuid = { version = "1.2.1", features = ["v4"]}

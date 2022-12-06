@@ -1,10 +1,11 @@
+use diesel::Queryable;
 use serde::{Serialize, Deserialize};
 use crate::data::db::models::author::Author;
 use crate::data::db::models::music::Music;
 use crate::data::db::models::story::Story;
 
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Queryable)]
 #[serde(rename_all = "camelCase")]
 pub struct Plot {
     pub id: String,

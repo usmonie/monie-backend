@@ -1,6 +1,7 @@
+use diesel::Queryable;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Queryable)]
 #[serde(rename_all = "camelCase")]
 pub struct Gif {
     pub id: String,

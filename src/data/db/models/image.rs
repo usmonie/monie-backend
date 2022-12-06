@@ -1,6 +1,7 @@
+use diesel::Queryable;
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Queryable)]
 #[serde(rename_all = "camelCase")]
 pub struct Image {
     pub id: String,

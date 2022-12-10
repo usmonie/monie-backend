@@ -23,9 +23,12 @@ erased-serde = "0.3"
 futures = "0.3.25"
 rand = "0.8.5"
 rug = "1.17.0"
+num_cpus = "1.14.0"
 tonic = { version = "0.8.3", features = ["transport"] }
 tonic-health = "0.8.0"
 tokio = { version = "1.5.0", features = ["full"] }
+tokio-stream = { version = "0.1.11", features = ["net"] }
 serde = { version = "1.0.125" }
+socket2 = { version = "0.4", features = ["all"] }
 lazy_static = "1.4.0"
 uuid = { version = "1.2.2", features = ["v4"] }

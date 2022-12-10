@@ -11,7 +11,7 @@ mod authentication;
 
 #[tokio::main]
 async fn main() -> Result<(), tonic::transport::Error> {
-    let addrs = ["0.0.0.1:5432", "0.0.0.1:8080"];
+    let addrs = ["0.0.0.0:8080"];
     let (tx, mut rx) = mpsc::unbounded_channel();
 
     for addr in addrs {

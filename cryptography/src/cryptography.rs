@@ -1,6 +1,6 @@
 use std::num::NonZeroU32;
+use aes_gcm::aead::Aead;
 
-use aead::Aead;
 use aes_gcm::KeyInit;
 use ring::{digest, pbkdf2};
 

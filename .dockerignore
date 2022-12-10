@@ -1,0 +1,33 @@
+# flyctl launch added from .gitignore
+# build directory
+dist
+
+# rust
+target
+**/**/*.rs.bk
+
+# project files
+!**/vendor/**
+
+# certificats directory
+certs
+
+# data directory
+_data
+**/.env*
+**/stripe.json
+public
+
+# flyctl launch added from .idea/.gitignore
+# Default ignored files
+.idea/shelf
+.idea/workspace.xml
+
+# flyctl launch added from cryptography/.gitignore
+cryptography/target
+cryptography/Cargo.lock
+
+# flyctl launch added from cryptography/.idea/.gitignore
+# Default ignored files
+cryptography/.idea/shelf
+cryptography/.idea/workspace.xml

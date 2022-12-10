@@ -100,7 +100,7 @@ pub fn store_user(
     let user_session = UserSession {
         user,
         private_key: private_key.clone(),
-        hashed_password: password.clone(),
+        hashed_password: password.clone().to_vec(),
         salt: salt.clone(),
     };
 

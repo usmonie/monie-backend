@@ -1,17 +1,14 @@
-use crate::domain::models::story::Story;
+use serde::{Deserialize, Serialize};
 
-use serde::{Serialize, Deserialize};
+use crate::domain::models::story::StoryCore;
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum BlabCore {
-    Story(Story),
-    Message(MessageCore)
+    Story(StoryCore),
+    Message(MessageCore),
 }
-
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub enum MessageCore {
-
-}
+pub enum MessageCore {}

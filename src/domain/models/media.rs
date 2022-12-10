@@ -1,30 +1,27 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::domain::models::audio::AudioCore;
-use crate::domain::models::gif::GifCore;
+use crate::domain::models::image::ImageCore;
 use crate::domain::models::music::MusicCore;
 use crate::domain::models::video::VideoCore;
-use crate::domain::models::image::ImageCore;
 
-
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub enum MediaTypeCore {
     GraphicMedia(GraphicMediaCore),
-    AudioMedia(AudioMediaCore)
+    AudioMedia(AudioMediaCore),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub enum GraphicMediaCore {
     Image(ImageCore),
     Video(VideoCore),
-    Gif(GifCore)
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub enum AudioMediaCore {
     Audio(AudioCore),
-    Music(MusicCore)
+    Music(MusicCore),
 }

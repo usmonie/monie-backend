@@ -1,6 +1,6 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug)]
 pub struct MusicCore {
     pub id: String,
     pub url: String,
@@ -9,7 +9,7 @@ pub struct MusicCore {
     pub created_at: u64,
     pub uploaded_at: u64,
     pub repeatable: bool,
-    pub duration: u64
+    pub duration: u64,
 }
 
 

@@ -1,4 +1,5 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+
 use crate::domain::models::media::MediaTypeCore;
 
 #[derive(Serialize, Deserialize)]

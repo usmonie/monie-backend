@@ -1,4 +1,5 @@
-use actix_web::{get, web, Responder, Result};
+use actix_web::{get, Responder, Result, web};
+
 use crate::domain::models::author::AuthorCore;
 use crate::domain::models::plot::Plot;
 

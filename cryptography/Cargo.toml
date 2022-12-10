@@ -1,0 +1,17 @@
+[package]
+name = "cryptography"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+aead = "0.5.1"
+aes = "0.8.2"
+aes-gcm = "0.10.1"
+bytes = "1.2.1"
+num = "0.4.0"
+rand = "0.8.5"
+ring = "0.17.0-alpha.11"
+rug = "1.17.0"
+serde = { version = "1.0.125", features = ["derive"] }
+sha3 = "0.10.6"
+rustls = "0.20.7"

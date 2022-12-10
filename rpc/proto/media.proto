@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package media;
+
+message Graphic {
+  string id = 1;
+  string name = 2;
+
+  uint64 size = 3;
+  string created_at = 4;
+  string upload_at = 5;
+
+  uint32 height = 6;
+  uint32 width = 7;
+
+  bool repeatable = 8;
+
+  uint64 duration = 9;
+}

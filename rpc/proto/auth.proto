@@ -2,30 +2,53 @@ syntax = "proto3";
 
 package authentication;
 
+import "user.proto";
+
 service Authentication {
-  rpc GeneratePrivateKey(PublicKey) returns (PublicKey) {}
-  rpc LoginWithPhoneNumber(PhoneNumber) returns (CodeResult) {}
-  rpc LoginAnonymously(Anonymous) returns (AnonymousResult) {}
+  rpc GeneratePrivateKey(PublicKeyRequest) returns (PublicKeyResponse) {}
+
+  rpc SendCodeToPhoneNumber(PhoneNumber) returns (CodeResult) {}
+
+  rpc LoginWithPhoneNumber(PhoneNumberWithCode) returns (user.User) {}
+  rpc LoginAnonymously(Anonymous) returns (user.User) {}
+
+  rpc CreateAnonymousAccount(AnonymousCreate) returns (user.User) {}
 }
 
-message PublicKey {
-  string x = 1;
-  string y = 2;
+message PublicKeyResponse {
+  string id = 1;
+  string x = 2;
+  string y = 3;
+}
+
+message PublicKeyRequest {
+  string x = 2;
+  string y = 3;
 }
 
 message PhoneNumber {
   string phone = 1;
 }
 
+message PhoneNumberWithCode {
+  string phone = 1;
+  string code = 2;
+}
+
 message Anonymous {
-  string username = 1;
-  string password = 2;
+  string id = 1;
+  string username = 2;
+  bytes password = 3;
+}
+
+
+message AnonymousCreate {
+  string id = 1;
+  string username = 2;
+  string name = 3;
+  bytes password = 4;
 }
 
 message CodeResult {
   string code = 1;
-}
-
-message AnonymousResult {
-  bool alreadyExist = 1;
 }

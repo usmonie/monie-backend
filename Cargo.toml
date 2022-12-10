@@ -2,7 +2,7 @@
 name = "monie-backend"
 version = "0.1.0"
 edition = "2021"
-authors=["Nie <nie@usmonie.com>"]
+authors = ["Nie <nie@usmonie.com>"]
 
 [target.aarch64-apple-darwin]
 rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/bin/zld"]
@@ -10,32 +10,24 @@ rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/bin/zld"]
 [workspace]
 members = [
     "cryptography",
-    "authentication",
     "rpc"
 ]
 
 [dependencies]
-actix = "0.13.0"
-actix-rt = "2.7.0"
-actix-web = "4"
-actix-web-actors = "4.1.0"
+monie-rpc = { path = "rpc", version = "0.1.0" }
+cryptography = { path = "cryptography", version = "0.1.0" }
+
 async-trait = "0.1.59"
-base64 = "0.20.0-alpha.1"
-bincode = "1.3.3"
-bytes = "1.2.1"
-cryptography = { path = "cryptography", version = "0.1.0"}
 diesel = { version = "2.0.0", features = ["postgres", "r2d2", "uuid", "chrono"] }
 diesel_migrations = "2.0.0"
 dotenv = "0.15.0"
 erased-serde = "0.3"
 futures = "0.3.25"
-openssl = { version = "0.10" }
 rand = "0.8.5"
 rug = "1.17.0"
-monie-rpc = { path = "rpc", version = "0.1.0"}
-tonic = "0.8.3"
+tonic = { version = "0.8.3", features = ["transport"] }
+tonic-health = "0.8.0"
 tokio = { version = "1.5.0", features = ["full"] }
-tokio-stream = "0.1.11"
 serde = { version = "1.0.125" }
-serde_json = "1.0.64"
-uuid = { version = "1.2.1", features = ["v4"]}
+lazy_static = "1.4.0"
+uuid = { version = "1.2.2", features = ["v4"] }

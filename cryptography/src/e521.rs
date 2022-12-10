@@ -1,5 +1,5 @@
 use std::fmt;
-use std::fmt::{Display};
+use std::fmt::Display;
 use std::ops::{Add, Mul, Shr, Sub};
 use std::str::FromStr;
 

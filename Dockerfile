@@ -4,7 +4,6 @@ FROM rust:latest
 # Copy our current working directory into the container
 COPY ./ ./
 
-RUN apt install -y protobuf-compiler
 # Create the release build
 RUN cargo build --release
 # ENV DATABASE_URL=postgres://postgres:password@localhost/monie_test

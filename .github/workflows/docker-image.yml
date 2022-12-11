@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: arduino/setup-protoc@v1
+        name: Install protobuf
       - uses: actions/checkout@v3
-      - name: Install protoc
-        run: sudo apt install -y protobuf-compiler
       - name: Build the Docker image
         run: docker build . --file Dockerfile --tag monie-release:$(date +%s)

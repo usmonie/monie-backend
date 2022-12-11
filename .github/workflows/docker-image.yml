@@ -14,5 +14,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - name: Install protoc
+        run: apt install -y protobuf-compiler
       - name: Build the Docker image
         run: docker build . --file Dockerfile --tag monie-release:$(date +%s)

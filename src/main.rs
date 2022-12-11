@@ -1,7 +1,6 @@
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 
-use tokio::sync::mpsc;
 use tonic::transport::Server;
 
 use monie_rpc::monie::auth::authentication_server::AuthenticationServer;

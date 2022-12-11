@@ -22,6 +22,7 @@ pub struct AuthenticationService {}
 
 #[async_trait]
 impl Authentication for AuthenticationService {
+
     async fn generate_private_key(&self, request: Request<PublicKeyRequest>) -> Result<Response<PublicKeyResponse>, Status> {
         let client_public_key = request.into_inner();
         let (private_key, public_key) = create_public_key();
@@ -145,10 +146,10 @@ pub fn create_public_key() -> (Integer, PointE521) {
 
 fn get_user(phone: String) -> User {
     User {
-        id: "12345-54321-12345-54321".to_string(),
+        id: Uuid::new_v4().to_string(),
         name: "nie".to_string(),
         avatar: None,
-        status: Some(String::from("YO CEO niegram")),
+        status: Some(String::from("YO CEO mnie")),
         username: Some(String::from("nie")),
         phone: Some(phone),
         email: Some(String::from("nie@usmonie.com")),

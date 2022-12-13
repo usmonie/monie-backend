@@ -4,16 +4,12 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Nie <nie@usmonie.com>"]
 
-[target.aarch64-apple-darwin]
-rustflags = ["-C", "link-arg=-fuse-ld=/usr/local/bin/zld"]
-
 [workspace]
-members = [
-    "rpc"
-]
+members = ["rpc"]
 
 [dependencies]
 monie-rpc = { path = "rpc", version = "0.1.0" }
+enigma = { git = "https://github.com/usmonie/enigma" }
 e521_curve = { git = "https://github.com/usmonie/e521_curve" }
 
 async-trait = "0.1.59"

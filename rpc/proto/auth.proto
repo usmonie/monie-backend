@@ -41,7 +41,6 @@ message Anonymous {
   bytes password = 3;
 }
 
-
 message AnonymousCreate {
   string id = 1;
   string username = 2;

@@ -3,7 +3,6 @@ pub mod monie {
         tonic::include_proto!("media");
     }
 
-
     pub mod user {
         tonic::include_proto!("user");
     }

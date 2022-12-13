@@ -108,6 +108,7 @@ impl Authentication for AuthenticationService {
 }
 
 impl AuthenticationService {
+
     fn check_user_password(&self, uuid: &Uuid, password_encrypted: &Vec<u8>) -> Result<Response<User>, Status> {
         let user_session = get_user_session(uuid);
         match user_session {

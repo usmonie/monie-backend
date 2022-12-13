@@ -1,5 +1,6 @@
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
+use tokio_stream::wrappers::TcpListenerStream;
 
 use tonic::transport::Server;
 
@@ -50,7 +51,7 @@ async fn serve() {
     sock.listen(8192).unwrap();
 
     let incoming =
-        tokio_stream::wrappers::TcpListenerStream::new(TcpListener::from_std(sock.into()).unwrap());
+        TcpListenerStream::new(TcpListener::from_std(sock.into()).unwrap());
 
     Server::builder()
         .concurrency_limit_per_connection(256)

@@ -5,9 +5,9 @@ use rug::Integer;
 use tonic::{Code, Request, Response, Status};
 use uuid::Uuid;
 
-use cryptography::{generate_private_key, generate_public_key, generate_salt};
-use cryptography::cryptography::{decrypt_data, encrypt_password, verify_password};
-use cryptography::e521::PointE521;
+use e521_curve::cryptography::{decrypt_data, encrypt_password, verify_password};
+use e521_curve::e521::PointE521;
+use e521_curve::{cryptography, generate_private_key, generate_public_key, generate_salt};
 use monie_rpc::monie::auth::{Anonymous, AnonymousCreate, CodeResult, PhoneNumber, PhoneNumberWithCode, PublicKeyRequest, PublicKeyResponse};
 use monie_rpc::monie::auth::authentication_server::Authentication;
 use monie_rpc::monie::media::Graphic;
@@ -135,8 +135,8 @@ impl AuthenticationService {
 }
 
 fn create_secret_key(private_key: &Integer, public_key: &PointE521) -> Vec<u8> {
-    let point = cryptography::diffie_hellman(private_key, public_key);
-    cryptography::generate_secret_key(point)
+    let point = e521_curve::diffie_hellman(private_key, public_key);
+    e521_curve::generate_secret_key(point)
 }
 
 pub fn create_public_key() -> (Integer, PointE521) {

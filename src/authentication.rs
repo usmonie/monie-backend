@@ -1,19 +1,20 @@
+use std::ops::Not;
 use std::str::FromStr;
 
 use async_trait::async_trait;
+use e521_curve::{generate_private_key, generate_public_key, generate_salt};
+use e521_curve::cryptography::{decrypt_data, encrypt_password, verify_password};
+use e521_curve::e521::PointE521;
 use rug::Integer;
 use tonic::{Code, Request, Response, Status};
 use uuid::Uuid;
 
-use e521_curve::cryptography::{decrypt_data, encrypt_password, verify_password};
-use e521_curve::e521::PointE521;
-use e521_curve::{cryptography, generate_private_key, generate_public_key, generate_salt};
-use monie_rpc::monie::auth::{Anonymous, AnonymousCreate, CodeResult, PhoneNumber, PhoneNumberWithCode, PublicKeyRequest, PublicKeyResponse};
-use monie_rpc::monie::auth::authentication_server::Authentication;
+use monie_rpc::monie::auth::{CodeResponse, CreateAnonymousRequest, EnterCodeRequest, EnterPhoneNumberRequest, LoginAnonymousRequest, PublicKeyRequest, PublicKeyResponse};
+use monie_rpc::monie::auth::authentication_api_server::AuthenticationApi;
 use monie_rpc::monie::media::Graphic;
 use monie_rpc::monie::user::User;
 
-use crate::data::db::{create_session, get_user_session, get_username_id, is_username_exist, PASSWORD_PEPPER, store_user};
+use crate::data::db::{create_session, get_user_session, get_username_id, is_session_id_exist, is_username_exist, PASSWORD_PEPPER, store_user};
 use crate::domain::models::media::GraphicMediaCore;
 use crate::domain::models::user::UserCore;
 
@@ -21,8 +22,7 @@ use crate::domain::models::user::UserCore;
 pub struct AuthenticationService {}
 
 #[async_trait]
-impl Authentication for AuthenticationService {
-
+impl AuthenticationApi for AuthenticationService {
     async fn generate_private_key(&self, request: Request<PublicKeyRequest>) -> Result<Response<PublicKeyResponse>, Status> {
         let client_public_key = request.into_inner();
         let (private_key, public_key) = create_public_key();
@@ -43,11 +43,11 @@ impl Authentication for AuthenticationService {
         Ok(Response::new(public_key))
     }
 
-    async fn send_code_to_phone_number(&self, request: Request<PhoneNumber>) -> Result<Response<CodeResult>, Status> {
+    async fn send_code_to_phone_number(&self, request: Request<EnterPhoneNumberRequest>) -> Result<Response<CodeResponse>, Status> {
         todo!()
     }
 
-    async fn login_with_phone_number(&self, request: Request<PhoneNumberWithCode>) -> Result<Response<User>, Status> {
+    async fn login_with_phone_number(&self, request: Request<EnterCodeRequest>) -> Result<Response<User>, Status> {
         let request = request.into_inner();
         let phone = &request.phone;
         let code = &request.code;
@@ -59,22 +59,32 @@ impl Authentication for AuthenticationService {
         }
     }
 
-    async fn login_anonymously(&self, request: Request<Anonymous>) -> Result<Response<User>, Status> {
+    async fn login_anonymously(&self, request: Request<LoginAnonymousRequest>) -> Result<Response<User>, Status> {
         let request = request.into_inner();
 
         let username_encrypted = &request.username;
         let password_encrypted = &request.password;
 
         let user_uuid = get_username_id(username_encrypted);
+
         match user_uuid {
             None => Err(Status::not_found("User not found")),
             Some(uuid) => self.check_user_password(&uuid, password_encrypted)
         }
     }
 
-    async fn create_anonymous_account(&self, request: Request<AnonymousCreate>) -> Result<Response<User>, Status> {
+    async fn generate_anonymous_account(&self, request: Request<CreateAnonymousRequest>) -> Result<Response<User>, Status> {
         let request = request.into_inner();
-        if is_username_exist(&request.username) {
+        let uuid = Uuid::from_str(request.id.as_str()).unwrap();
+        let username = request.username;
+        let password = request.password;
+        let name = request.name;
+
+        if is_session_id_exist(&uuid).not() {
+            return Err(Status::not_found("UUID not found"));
+        }
+
+        if is_username_exist(&username) {
             return Err(Status::already_exists("Username already exist"));
         }
 
@@ -82,17 +92,17 @@ impl Authentication for AuthenticationService {
         let salt = salt.as_slice();
 
         let password_encrypted = encrypt_password(
-            request.password.as_slice(),
+            password.as_slice(),
             salt,
-            PASSWORD_PEPPER.as_bytes()
+            PASSWORD_PEPPER.as_bytes(),
         );
 
         let user = store_user(
-            &Uuid::parse_str(request.id.as_str()).unwrap(),
-            request.name.clone(),
+            &uuid,
+            name,
             None,
             None,
-            Some(request.username.clone()),
+            Some(username),
             None,
             None,
             &vec![],
@@ -108,7 +118,6 @@ impl Authentication for AuthenticationService {
 }
 
 impl AuthenticationService {
-
     fn check_user_password(&self, uuid: &Uuid, password_encrypted: &Vec<u8>) -> Result<Response<User>, Status> {
         let user_session = get_user_session(uuid);
         match user_session {
@@ -159,9 +168,9 @@ fn get_user(phone: String) -> User {
 
 fn map_user(user: &UserCore) -> User {
     let avatar = user.avatar.as_ref()
-        .map(|graphic| match graphic {
-            GraphicMediaCore::Image(image) => {
-                Graphic {
+        .map(|graphic| {
+            match graphic {
+                GraphicMediaCore::Image(image) => Graphic {
                     id: image.id.to_string(),
                     name: image.name.clone(),
                     size: image.size,
@@ -171,10 +180,9 @@ fn map_user(user: &UserCore) -> User {
                     width: image.width,
                     repeatable: false,
                     duration: 0,
-                }
-            }
-            GraphicMediaCore::Video(video) => {
-                Graphic {
+                },
+
+                GraphicMediaCore::Video(video) => Graphic {
                     id: video.id.to_string(),
                     name: video.name.clone(),
                     size: video.size,
@@ -184,7 +192,7 @@ fn map_user(user: &UserCore) -> User {
                     width: video.width,
                     repeatable: video.repeatable,
                     duration: video.duration,
-                }
+                },
             }
         });
 

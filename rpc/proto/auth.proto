@@ -4,15 +4,16 @@ package authentication;
 
 import "user.proto";
 
-service Authentication {
+service AuthenticationApi {
   rpc GeneratePrivateKey(PublicKeyRequest) returns (PublicKeyResponse) {}
 
-  rpc SendCodeToPhoneNumber(PhoneNumber) returns (CodeResult) {}
+  rpc SendCodeToPhoneNumber(EnterPhoneNumberRequest) returns (CodeResponse) {}
 
-  rpc LoginWithPhoneNumber(PhoneNumberWithCode) returns (user.User) {}
-  rpc LoginAnonymously(Anonymous) returns (user.User) {}
+  rpc LoginWithPhoneNumber(EnterCodeRequest) returns (user.User) {}
+  rpc LoginAnonymously(LoginAnonymousRequest) returns (user.User) {}
 
-  rpc CreateAnonymousAccount(AnonymousCreate) returns (user.User) {}
+  rpc GenerateAnonymousAccount(CreateAnonymousRequest) returns (user.User) {}
+
 }
 
 message PublicKeyResponse {
@@ -26,28 +27,40 @@ message PublicKeyRequest {
   string y = 3;
 }
 
-message PhoneNumber {
+message EnterPhoneNumberRequest {
   string phone = 1;
 }
 
-message PhoneNumberWithCode {
+message EnterCodeRequest {
   string phone = 1;
   string code = 2;
 }
 
-message Anonymous {
+message GenerateAnonymousResponse {
   string id = 1;
   string username = 2;
   bytes password = 3;
 }
 
-message AnonymousCreate {
+message LoginAnonymousRequest {
   string id = 1;
   string username = 2;
-  string name = 3;
-  bytes password = 4;
+  bytes password = 3;
 }
 
-message CodeResult {
+message CreateAnonymousRequest {
+  string id = 1;
+
+  string username = 2;
+  bytes password = 3;
+
+  string name = 4;
+}
+
+message SetUserAccountDataRequest {
+  string name = 1;
+}
+
+message CodeResponse {
   string code = 1;
 }

@@ -1,16 +1,14 @@
 use serde::{Deserialize, Serialize};
 
-use crate::domain::models::author::AuthorCore;
-use crate::domain::models::media::MediaTypeCore;
-use crate::domain::models::music::MusicCore;
+use crate::domain::models::media::{AudioMediaCore, GraphicMediaCore};
+use crate::domain::models::user::UserCore;
 
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug)]
 pub struct StoryCore {
     pub id: String,
-    pub author: Box<AuthorCore>,
+    pub author: UserCore,
     pub created_at: u64,
     pub text: Option<String>,
-    pub scene: Box<MediaTypeCore>,
-    pub soundtrack: MusicCore,
+    pub scene: GraphicMediaCore,
+    pub soundtrack: Option<AudioMediaCore>,
 }

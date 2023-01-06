@@ -5,9 +5,10 @@ package accounts;
 import "user.proto";
 
 service AccountsApi {
-  rpc find(FindByAccountNameRequest) returns (FindByAccountNameResponse) {}
 
-  rpc CheckUsernameExist(FindByAccountNameResponse) returns (IsUsernameExistResponse) {}
+  rpc Find(FindByAccountNameRequest) returns (FindByAccountNameResponse);
+
+  rpc CheckUsernameExist(FindByAccountNameResponse) returns (IsUsernameExistResponse);
 
 }
 
@@ -16,7 +17,7 @@ message FindByAccountNameRequest {
 }
 
 message FindByAccountNameResponse {
-  repeated user.User users = 1;
+  repeated user.UserResponse users = 1;
 }
 
 message IsUsernameExistResponse {

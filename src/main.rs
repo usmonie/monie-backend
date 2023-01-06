@@ -6,11 +6,11 @@ use tonic::transport::Server;
 
 use monie_rpc::monie::auth::authentication_api_server::AuthenticationApiServer;
 
-use crate::authentication::AuthenticationService;
+use crate::api::authentication::AuthenticationService;
 
 mod domain;
 mod data;
-mod authentication;
+mod api;
 
 fn main() {
     let mut handlers = Vec::new();

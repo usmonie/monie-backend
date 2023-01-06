@@ -2,35 +2,45 @@ use std::ops::Not;
 use std::str::FromStr;
 
 use async_trait::async_trait;
-use e521_curve::{generate_private_key, generate_public_key, generate_salt};
 use e521_curve::cryptography::{decrypt_data, encrypt_password, verify_password};
 use e521_curve::e521::PointE521;
+use e521_curve::{generate_private_key, generate_public_key, generate_salt};
 use rug::Integer;
 use tonic::{Code, Request, Response, Status};
 use uuid::Uuid;
 
-use monie_rpc::monie::auth::{CodeResponse, CreateAnonymousRequest, EnterCodeRequest, EnterPhoneNumberRequest, LoginAnonymousRequest, PublicKeyRequest, PublicKeyResponse};
 use monie_rpc::monie::auth::authentication_api_server::AuthenticationApi;
-use monie_rpc::monie::media::Graphic;
-use monie_rpc::monie::user::User;
+use monie_rpc::monie::auth::{
+    CodeResponse, CreateAnonymousRequest, EnterCodeRequest, EnterPhoneNumberRequest,
+    LoginAnonymousRequest, PublicKeyRequest, PublicKeyResponse,
+};
+use monie_rpc::monie::user::UserResponse;
 
-use crate::data::db::{create_session, get_user_session, get_username_id, is_session_id_exist, is_username_exist, PASSWORD_PEPPER, store_user};
-use crate::domain::models::media::GraphicMediaCore;
-use crate::domain::models::user::UserCore;
+use crate::api::models::user::User;
+use crate::data::db::{
+    create_session, get_user_session, get_username_id, is_session_id_exist, is_username_exist,
+    store_user, PASSWORD_PEPPER,
+};
 
 #[derive(Debug)]
 pub struct AuthenticationService {}
 
 #[async_trait]
 impl AuthenticationApi for AuthenticationService {
-    async fn generate_private_key(&self, request: Request<PublicKeyRequest>) -> Result<Response<PublicKeyResponse>, Status> {
+    async fn generate_private_key(
+        &self,
+        request: Request<PublicKeyRequest>,
+    ) -> Result<Response<PublicKeyResponse>, Status> {
         let client_public_key = request.into_inner();
         let (private_key, public_key) = create_public_key();
 
-        let secret_key = create_secret_key(&private_key, &PointE521 {
-            x: Integer::from_str(&client_public_key.x[..]).unwrap(),
-            y: Integer::from_str(&client_public_key.y[..]).unwrap(),
-        });
+        let secret_key = create_secret_key(
+            &private_key,
+            &PointE521 {
+                x: Integer::from_str(&client_public_key.x[..]).unwrap(),
+                y: Integer::from_str(&client_public_key.y[..]).unwrap(),
+            },
+        );
 
         let session = create_session(secret_key);
 
@@ -43,23 +53,32 @@ impl AuthenticationApi for AuthenticationService {
         Ok(Response::new(public_key))
     }
 
-    async fn send_code_to_phone_number(&self, request: Request<EnterPhoneNumberRequest>) -> Result<Response<CodeResponse>, Status> {
+    async fn send_code_to_phone_number(
+        &self,
+        request: Request<EnterPhoneNumberRequest>,
+    ) -> Result<Response<CodeResponse>, Status> {
         todo!()
     }
 
-    async fn login_with_phone_number(&self, request: Request<EnterCodeRequest>) -> Result<Response<User>, Status> {
+    async fn login_with_phone_number(
+        &self,
+        request: Request<EnterCodeRequest>,
+    ) -> Result<Response<UserResponse>, Status> {
         let request = request.into_inner();
         let phone = &request.phone;
         let code = &request.code;
 
         if code == "123456" {
-            Ok(Response::new(get_user(String::from(phone))))
+            Ok(Response::new(get_user(String::from(phone)).into()))
         } else {
             Err(Status::new(Code::InvalidArgument, "Code error"))
         }
     }
 
-    async fn login_anonymously(&self, request: Request<LoginAnonymousRequest>) -> Result<Response<User>, Status> {
+    async fn login_anonymously(
+        &self,
+        request: Request<LoginAnonymousRequest>,
+    ) -> Result<Response<UserResponse>, Status> {
         let request = request.into_inner();
 
         let username_encrypted = &request.username;
@@ -69,11 +88,14 @@ impl AuthenticationApi for AuthenticationService {
 
         match user_uuid {
             None => Err(Status::not_found("User not found")),
-            Some(uuid) => self.check_user_password(&uuid, password_encrypted)
+            Some(uuid) => self.check_user_password(&uuid, password_encrypted),
         }
     }
 
-    async fn generate_anonymous_account(&self, request: Request<CreateAnonymousRequest>) -> Result<Response<User>, Status> {
+    async fn generate_anonymous_account(
+        &self,
+        request: Request<CreateAnonymousRequest>,
+    ) -> Result<Response<UserResponse>, Status> {
         let request = request.into_inner();
         let uuid = Uuid::from_str(request.id.as_str()).unwrap();
         let username = request.username;
@@ -91,11 +113,8 @@ impl AuthenticationApi for AuthenticationService {
         let salt = generate_salt();
         let salt = salt.as_slice();
 
-        let password_encrypted = encrypt_password(
-            password.as_slice(),
-            salt,
-            PASSWORD_PEPPER.as_bytes(),
-        );
+        let password_encrypted =
+            encrypt_password(password.as_slice(), salt, PASSWORD_PEPPER.as_bytes());
 
         let user = store_user(
             &uuid,
@@ -112,13 +131,17 @@ impl AuthenticationApi for AuthenticationService {
 
         match user {
             None => Err(Status::aborted("Something went wrong")),
-            Some(user) => Ok(Response::new(map_user(&user.user)))
+            Some(user) => Ok(Response::new(User::from(user.user).into())),
         }
     }
 }
 
 impl AuthenticationService {
-    fn check_user_password(&self, uuid: &Uuid, password_encrypted: &Vec<u8>) -> Result<Response<User>, Status> {
+    fn check_user_password(
+        &self,
+        uuid: &Uuid,
+        password_encrypted: &Vec<u8>,
+    ) -> Result<Response<UserResponse>, Status> {
         let user_session = get_user_session(uuid);
         match user_session {
             None => Err(Status::not_found("User not found")),
@@ -134,7 +157,8 @@ impl AuthenticationService {
                     password.as_slice(),
                     session.salt.as_slice(),
                 ) {
-                    Ok(Response::new(map_user(&session.user)))
+                    let user: User = session.user.into();
+                    Ok(Response::new(user.into()))
                 } else {
                     Err(Status::not_found("User not found"))
                 }
@@ -163,46 +187,5 @@ fn get_user(phone: String) -> User {
         username: Some(String::from("nie")),
         phone: Some(phone),
         email: Some(String::from("nie@usmonie.com")),
-    }
-}
-
-fn map_user(user: &UserCore) -> User {
-    let avatar = user.avatar.as_ref()
-        .map(|graphic| {
-            match graphic {
-                GraphicMediaCore::Image(image) => Graphic {
-                    id: image.id.to_string(),
-                    name: image.name.clone(),
-                    size: image.size,
-                    created_at: image.created_at.clone().to_string(),
-                    upload_at: image.uploaded_at.clone().to_string(),
-                    height: image.height,
-                    width: image.width,
-                    repeatable: false,
-                    duration: 0,
-                },
-
-                GraphicMediaCore::Video(video) => Graphic {
-                    id: video.id.to_string(),
-                    name: video.name.clone(),
-                    size: video.size,
-                    created_at: video.created_at.clone().to_string(),
-                    upload_at: video.uploaded_at.clone().to_string(),
-                    height: video.height,
-                    width: video.width,
-                    repeatable: video.repeatable,
-                    duration: video.duration,
-                },
-            }
-        });
-
-    User {
-        id: user.id.to_string(),
-        name: user.name.clone(),
-        avatar,
-        status: user.status.clone(),
-        username: user.username.clone(),
-        phone: user.phone.clone(),
-        email: user.email.clone(),
     }
 }

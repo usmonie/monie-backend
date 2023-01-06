@@ -9,11 +9,10 @@ service AuthenticationApi {
 
   rpc SendCodeToPhoneNumber(EnterPhoneNumberRequest) returns (CodeResponse) {}
 
-  rpc LoginWithPhoneNumber(EnterCodeRequest) returns (user.User) {}
-  rpc LoginAnonymously(LoginAnonymousRequest) returns (user.User) {}
+  rpc LoginWithPhoneNumber(EnterCodeRequest) returns (user.UserResponse) {}
+  rpc LoginAnonymously(LoginAnonymousRequest) returns (user.UserResponse) {}
 
-  rpc GenerateAnonymousAccount(CreateAnonymousRequest) returns (user.User) {}
-
+  rpc GenerateAnonymousAccount(CreateAnonymousRequest) returns (user.UserResponse) {}
 }
 
 message PublicKeyResponse {
@@ -55,6 +54,7 @@ message CreateAnonymousRequest {
   bytes password = 3;
 
   string name = 4;
+  string about = 5;
 }
 
 message SetUserAccountDataRequest {

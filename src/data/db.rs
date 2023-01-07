@@ -1,7 +1,9 @@
+use async_trait::async_trait;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
 use lazy_static::lazy_static;
+use names::{Generator, Name};
 use uuid::Uuid;
 
 use crate::domain::models::media::GraphicMediaCore;
@@ -33,6 +35,21 @@ pub fn is_session_id_exist(id: &Uuid) -> bool {
 
 pub fn is_username_exist(username: &String) -> bool {
     USERNAMES.lock().unwrap().contains_key(username)
+}
+
+pub fn is_user_exist_for_uuid(uuid: &Uuid) -> bool {
+    USERS_SESSIONS.lock().unwrap().contains_key(uuid)
+}
+
+pub fn generate_new_username() -> String {
+    let mut generator = Generator::with_naming(Name::Numbered);
+    let mut username = generator.next().unwrap();
+
+    while is_username_exist(&username) {
+        username = generator.next().unwrap();
+    }
+
+    return username;
 }
 
 pub fn create_session(session_key: Vec<u8>) -> (Uuid, Option<SessionCore>) {
@@ -74,7 +91,9 @@ pub fn get_username_id(username: &String) -> Option<Uuid> {
     username.copied()
 }
 
-pub fn store_user(
+pub fn store_temporary_username(username: &String, uuid: &Uuid) {}
+
+pub async fn store_user(
     session_uuid: &Uuid,
     name: String,
     avatar: Option<GraphicMediaCore>,
@@ -85,7 +104,7 @@ pub fn store_user(
     private_key: &Vec<u8>,
     password: [u8; 64],
     salt: &Vec<u8>,
-) -> Option<UserSessionCore> {
+) {
     let mut users = USERS_SESSIONS.lock().unwrap();
     let mut user_uuid = Uuid::new_v4();
     while users.contains_key(&user_uuid) {
@@ -117,7 +136,7 @@ pub fn store_user(
     };
     sessions.insert(*session_uuid, new_session);
 
-    users.insert(user_uuid, user_session)
+    users.insert(user_uuid, user_session);
 }
 
 pub fn store_password(id: &Uuid, password: Vec<u8>, salt: Vec<u8>) {

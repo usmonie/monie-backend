@@ -1,13 +1,17 @@
 use std::ops::Not;
 use std::str::FromStr;
+use std::sync::Arc;
+use std::thread;
+use std::thread::JoinHandle;
 
 use async_trait::async_trait;
 use e521_curve::e521::Point;
 use e521_curve::{generate_private_key, generate_public_key, generate_salt};
 use enigma::{decrypt_data, encrypt_password, verify_password};
 use num_bigint_dig::BigInt;
+use regex::internal::Input;
 use tonic::{Code, Request, Response, Status};
-use uuid::Uuid;
+use uuid::{uuid, Uuid};
 
 use monie_rpc::monie::auth::authentication_api_server::AuthenticationApi;
 use monie_rpc::monie::auth::{
@@ -19,8 +23,8 @@ use monie_rpc::monie::user::UserResponse;
 
 use crate::api::models::user::User;
 use crate::data::db::{
-    create_session, get_user_session, get_username_id, is_session_id_exist, is_username_exist,
-    store_user,
+    create_session, generate_new_username, get_user_session, get_username_id, is_session_id_exist,
+    is_username_exist, store_user,
 };
 use crate::data::passwords::{generate_password, PASSWORD_PEPPER};
 
@@ -63,35 +67,25 @@ impl AuthenticationApi for AuthenticationService {
         let uuid = Uuid::from_str(request.id.as_str()).unwrap();
 
         if is_session_id_exist(&uuid).not() {
-            return Err(Status::not_found("UUID not found"));
+            return Err(Status::not_found(
+                "UUID not found, you need to create new one",
+            ));
         }
 
-        let salt = generate_salt();
-        let salt = salt.as_slice();
+        let password_handle = thread::spawn(|| Arc::new(generate_password().as_bytes().to_vec()));
 
-        let password = generate_password();
+        let username_handle = thread::spawn(|| Arc::new(generate_new_username()));
 
-        let password_encrypted =
-            encrypt_password(password.as_slice(), salt, PASSWORD_PEPPER.as_bytes());
+        let password = password_handle.join().unwrap();
+        let username = username_handle.join().unwrap();
 
-        let user = store_user(
-            &uuid,
-            name,
-            None,
-            None,
-            Some(username),
-            None,
-            None,
-            &vec![],
-            password_encrypted,
-            &salt.to_vec(),
-        );
+        self.create_user(uuid.clone(), password.clone(), username.clone());
 
-        match user {
-            None => Err(Status::aborted("Something went wrong")),
-            Some(user) => Ok(Response::new(),
-        }
-        todo!()
+        Ok(Response::new(GenerateAnonymousResponse {
+            id: uuid.to_string(),
+            username: username.to_string(),
+            password: password.to_vec(),
+        }))
     }
 
     async fn create_anonymous_account(
@@ -170,6 +164,35 @@ impl AuthenticationService {
             }
         }
     }
+
+    fn create_user(&self, uuid: Uuid, password: Arc<Vec<u8>>, username: Arc<String>) {
+        thread::Builder::new()
+            .spawn(move || {
+                move || {
+                    let salt = generate_salt();
+                    let salt = salt.as_slice();
+
+                    let password = Arc::clone(&password).to_vec();
+                    let password_encrypted =
+                        encrypt_password(password.as_slice(), salt, PASSWORD_PEPPER.as_bytes());
+                    let username = Arc::clone(&username).to_string();
+
+                    store_user(
+                        &uuid,
+                        String::from("nie"),
+                        None,
+                        None,
+                        Some(username),
+                        None,
+                        None,
+                        &vec![],
+                        password_encrypted,
+                        &salt.to_vec(),
+                    );
+                }
+            })
+            .unwrap();
+    }
 }
 
 fn create_secret_key(private_key: &BigInt, public_key: &Point) -> Vec<u8> {
@@ -188,7 +211,7 @@ fn get_user(phone: String) -> User {
         id: Uuid::new_v4().to_string(),
         name: "nie".to_string(),
         avatar: None,
-        status: Some(String::from("YO CEO mnie")),
+        status: Some(String::from("YO CEO mNie")),
         username: Some(String::from("nie")),
         phone: Some(phone),
         email: Some(String::from("nie@usmonie.com")),

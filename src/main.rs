@@ -1,3 +1,5 @@
+extern crate core;
+
 use std::net::SocketAddr;
 
 use tokio::net::TcpListener;
@@ -8,9 +10,9 @@ use monie_rpc::monie::auth::authentication_api_server::AuthenticationApiServer;
 
 use crate::api::authentication::AuthenticationService;
 
-mod domain;
-mod data;
 mod api;
+mod data;
+mod domain;
 
 fn main() {
     let mut handlers = Vec::new();
@@ -39,7 +41,8 @@ async fn serve() {
         },
         socket2::Type::STREAM,
         None,
-    ).unwrap();
+    )
+    .unwrap();
 
     let authentication_service = AuthenticationService {};
     let authentication_server = AuthenticationApiServer::new(authentication_service);
@@ -50,8 +53,7 @@ async fn serve() {
     sock.bind(&addr.into()).unwrap();
     sock.listen(8192).unwrap();
 
-    let incoming =
-        TcpListenerStream::new(TcpListener::from_std(sock.into()).unwrap());
+    let incoming = TcpListenerStream::new(TcpListener::from_std(sock.into()).unwrap());
 
     Server::builder()
         .concurrency_limit_per_connection(256)

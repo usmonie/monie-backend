@@ -2,25 +2,27 @@ use std::ops::Not;
 use std::str::FromStr;
 
 use async_trait::async_trait;
-use e521_curve::cryptography::{decrypt_data, encrypt_password, verify_password};
-use e521_curve::e521::PointE521;
+use e521_curve::e521::Point;
 use e521_curve::{generate_private_key, generate_public_key, generate_salt};
-use rug::Integer;
+use enigma::{decrypt_data, encrypt_password, verify_password};
+use num_bigint_dig::BigInt;
 use tonic::{Code, Request, Response, Status};
 use uuid::Uuid;
 
 use monie_rpc::monie::auth::authentication_api_server::AuthenticationApi;
 use monie_rpc::monie::auth::{
     CodeResponse, CreateAnonymousRequest, EnterCodeRequest, EnterPhoneNumberRequest,
-    LoginAnonymousRequest, PublicKeyRequest, PublicKeyResponse,
+    GenerateAnonymousAccountRequest, GenerateAnonymousResponse, LoginAnonymousRequest,
+    PublicKeyRequest, PublicKeyResponse,
 };
 use monie_rpc::monie::user::UserResponse;
 
 use crate::api::models::user::User;
 use crate::data::db::{
     create_session, get_user_session, get_username_id, is_session_id_exist, is_username_exist,
-    store_user, PASSWORD_PEPPER,
+    store_user,
 };
+use crate::data::passwords::{generate_password, PASSWORD_PEPPER};
 
 #[derive(Debug)]
 pub struct AuthenticationService {}
@@ -36,9 +38,9 @@ impl AuthenticationApi for AuthenticationService {
 
         let secret_key = create_secret_key(
             &private_key,
-            &PointE521 {
-                x: Integer::from_str(&client_public_key.x[..]).unwrap(),
-                y: Integer::from_str(&client_public_key.y[..]).unwrap(),
+            &Point {
+                x: BigInt::from_str(&client_public_key.x[..]).unwrap(),
+                y: BigInt::from_str(&client_public_key.y[..]).unwrap(),
             },
         );
 
@@ -51,6 +53,52 @@ impl AuthenticationApi for AuthenticationService {
         };
 
         Ok(Response::new(public_key))
+    }
+
+    async fn generate_anonymous_account(
+        &self,
+        request: Request<GenerateAnonymousAccountRequest>,
+    ) -> Result<Response<GenerateAnonymousResponse>, Status> {
+        let request = request.into_inner();
+        let uuid = Uuid::from_str(request.id.as_str()).unwrap();
+
+        if is_session_id_exist(&uuid).not() {
+            return Err(Status::not_found("UUID not found"));
+        }
+
+        let salt = generate_salt();
+        let salt = salt.as_slice();
+
+        let password = generate_password();
+
+        let password_encrypted =
+            encrypt_password(password.as_slice(), salt, PASSWORD_PEPPER.as_bytes());
+
+        let user = store_user(
+            &uuid,
+            name,
+            None,
+            None,
+            Some(username),
+            None,
+            None,
+            &vec![],
+            password_encrypted,
+            &salt.to_vec(),
+        );
+
+        match user {
+            None => Err(Status::aborted("Something went wrong")),
+            Some(user) => Ok(Response::new(),
+        }
+        todo!()
+    }
+
+    async fn create_anonymous_account(
+        &self,
+        request: Request<CreateAnonymousRequest>,
+    ) -> Result<Response<UserResponse>, Status> {
+        todo!()
     }
 
     async fn send_code_to_phone_number(
@@ -91,49 +139,6 @@ impl AuthenticationApi for AuthenticationService {
             Some(uuid) => self.check_user_password(&uuid, password_encrypted),
         }
     }
-
-    async fn generate_anonymous_account(
-        &self,
-        request: Request<CreateAnonymousRequest>,
-    ) -> Result<Response<UserResponse>, Status> {
-        let request = request.into_inner();
-        let uuid = Uuid::from_str(request.id.as_str()).unwrap();
-        let username = request.username;
-        let password = request.password;
-        let name = request.name;
-
-        if is_session_id_exist(&uuid).not() {
-            return Err(Status::not_found("UUID not found"));
-        }
-
-        if is_username_exist(&username) {
-            return Err(Status::already_exists("Username already exist"));
-        }
-
-        let salt = generate_salt();
-        let salt = salt.as_slice();
-
-        let password_encrypted =
-            encrypt_password(password.as_slice(), salt, PASSWORD_PEPPER.as_bytes());
-
-        let user = store_user(
-            &uuid,
-            name,
-            None,
-            None,
-            Some(username),
-            None,
-            None,
-            &vec![],
-            password_encrypted,
-            &salt.to_vec(),
-        );
-
-        match user {
-            None => Err(Status::aborted("Something went wrong")),
-            Some(user) => Ok(Response::new(User::from(user.user).into())),
-        }
-    }
 }
 
 impl AuthenticationService {
@@ -167,14 +172,14 @@ impl AuthenticationService {
     }
 }
 
-fn create_secret_key(private_key: &Integer, public_key: &PointE521) -> Vec<u8> {
+fn create_secret_key(private_key: &BigInt, public_key: &Point) -> Vec<u8> {
     let point = e521_curve::diffie_hellman(private_key, public_key);
     e521_curve::generate_secret_key(point)
 }
 
-pub fn create_public_key() -> (Integer, PointE521) {
-    let private_key: Integer = generate_private_key();
-    let public_key_point: PointE521 = generate_public_key(&private_key);
+pub fn create_public_key() -> (BigInt, Point) {
+    let private_key: BigInt = generate_private_key();
+    let public_key_point: Point = generate_public_key(&private_key);
     (private_key, public_key_point)
 }
 

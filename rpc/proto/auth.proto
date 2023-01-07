@@ -7,12 +7,13 @@ import "user.proto";
 service AuthenticationApi {
   rpc GeneratePrivateKey(PublicKeyRequest) returns (PublicKeyResponse) {}
 
+  rpc GenerateAnonymousAccount(GenerateAnonymousAccountRequest) returns (GenerateAnonymousResponse) {}
+  rpc CreateAnonymousAccount(CreateAnonymousRequest) returns (user.UserResponse) {}
+
   rpc SendCodeToPhoneNumber(EnterPhoneNumberRequest) returns (CodeResponse) {}
 
   rpc LoginWithPhoneNumber(EnterCodeRequest) returns (user.UserResponse) {}
   rpc LoginAnonymously(LoginAnonymousRequest) returns (user.UserResponse) {}
-
-  rpc GenerateAnonymousAccount(CreateAnonymousRequest) returns (user.UserResponse) {}
 }
 
 message PublicKeyResponse {
@@ -39,6 +40,10 @@ message GenerateAnonymousResponse {
   string id = 1;
   string username = 2;
   bytes password = 3;
+}
+
+message GenerateAnonymousAccountRequest {
+  string id = 1;
 }
 
 message LoginAnonymousRequest {

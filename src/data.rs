@@ -1,3 +1,3 @@
 pub mod db;
-mod passwords;
-mod timeline;
+pub mod passwords;
+pub mod timeline;

@@ -23,8 +23,6 @@ lazy_static! {
     };
 }
 
-pub const PASSWORD_PEPPER: &str = "gkHbhXQG3JIbvyGjI1GfsMAxSQgnI1XesBcfT7GcznBi7Htbd7MD0gJlmYlC5t";
-
 pub fn create_tables() {
     // TODO: FIX THIS
 }
@@ -43,7 +41,7 @@ pub fn create_session(session_key: Vec<u8>) -> (Uuid, Option<SessionCore>) {
     while sessions.contains_key(&uuid) {
         uuid = Uuid::new_v4();
     }
-    (
+    return (
         uuid,
         sessions.insert(
             uuid,
@@ -52,7 +50,7 @@ pub fn create_session(session_key: Vec<u8>) -> (Uuid, Option<SessionCore>) {
                 user_id: None,
             },
         ),
-    )
+    );
 }
 
 pub fn get_session(uuid: &Uuid) -> Option<SessionCore> {

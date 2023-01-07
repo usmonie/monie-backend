@@ -24,7 +24,7 @@ use monie_rpc::monie::user::UserResponse;
 use crate::api::models::user::User;
 use crate::data::db::{
     create_session, generate_new_username, get_user_session, get_username_id, is_session_id_exist,
-    is_username_exist, store_user,
+    is_user_exist_for_uuid, is_username_exist, store_user,
 };
 use crate::data::passwords::{generate_password, PASSWORD_PEPPER};
 
@@ -72,12 +72,12 @@ impl AuthenticationApi for AuthenticationService {
             ));
         }
 
-        let password_handle = thread::spawn(|| Arc::new(generate_password().as_bytes().to_vec()));
+        if is_user_exist_for_uuid(&uuid) {
+            return Err(Status::already_exists("UUID found, but user already exist"));
+        }
 
-        let username_handle = thread::spawn(|| Arc::new(generate_new_username()));
-
-        let password = password_handle.join().unwrap();
-        let username = username_handle.join().unwrap();
+        let password = Arc::new(generate_password().as_bytes().to_vec());
+        let username = Arc::new(generate_new_username());
 
         self.create_user(uuid.clone(), password.clone(), username.clone());
 

@@ -1,27 +1,45 @@
 use serde::{Deserialize, Serialize};
 
-use crate::domain::models::audio::AudioCore;
-use crate::domain::models::image::ImageCore;
-use crate::domain::models::music::MusicCore;
-use crate::domain::models::video::VideoCore;
-
 #[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
-pub enum MediaTypeCore {
-    GraphicMedia(GraphicMediaCore),
-    AudioMedia(AudioMediaCore),
+pub struct GraphicMediaCore {
+    pub id: String,
+    pub url: String,
+    pub name: String,
+    pub uploaded_by_id: String,
+    pub size: u64,
+    pub created_at: u64,
+    pub uploaded_at: u64,
+    pub height: u32,
+    pub width: u32,
+
+    pub media_type: GraphicMediaTypeCore,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
-pub enum GraphicMediaCore {
-    Image(ImageCore),
-    Video(VideoCore),
+pub enum GraphicMediaTypeCore {
+    Video {
+        repeatable: bool,
+        duration: u64,
+    },
+    Image,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
-pub enum AudioMediaCore {
-    Audio(AudioCore),
-    Music(MusicCore),
+pub struct AudioMediaCore {
+    pub id: String,
+    pub url: String,
+    pub name: String,
+    pub uploaded_by_id: String,
+    pub size: u64,
+    pub created_at: u64,
+    pub uploaded_at: u64,
+    pub duration: u64,
+
+    pub media_type: AudioMediaTypeCore,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug)]
+pub enum AudioMediaTypeCore {
+    Audio,
+    Music,
 }

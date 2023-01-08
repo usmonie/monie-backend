@@ -1,20 +1,20 @@
 use std::net::SocketAddr;
+
 use tokio::net::TcpListener;
 use tokio_stream::wrappers::TcpListenerStream;
-
 use tonic::transport::Server;
 
-use monie_rpc::monie::auth::authentication_server::AuthenticationServer;
+use monie_rpc::monie::auth::authentication_api_server::AuthenticationApiServer;
 
-use crate::authentication::AuthenticationService;
+use crate::api::authentication::AuthenticationService;
 
-mod domain;
+mod api;
 mod data;
-mod authentication;
+mod domain;
 
-fn main(){
+fn main() {
     let mut handlers = Vec::new();
-    for i in 0..num_cpus::get() {
+    for _i in 0..num_cpus::get() {
         let h = std::thread::spawn(move || {
             tokio::runtime::Builder::new_current_thread()
                 .enable_all()
@@ -39,10 +39,11 @@ async fn serve() {
         },
         socket2::Type::STREAM,
         None,
-    ).unwrap();
+    )
+        .unwrap();
 
     let authentication_service = AuthenticationService {};
-    let authentication_server = AuthenticationServer::new(authentication_service);
+    let authentication_server = AuthenticationApiServer::new(authentication_service);
 
     sock.set_reuse_address(true).unwrap();
     sock.set_reuse_port(true).unwrap();
@@ -50,8 +51,7 @@ async fn serve() {
     sock.bind(&addr.into()).unwrap();
     sock.listen(8192).unwrap();
 
-    let incoming =
-        TcpListenerStream::new(TcpListener::from_std(sock.into()).unwrap());
+    let incoming = TcpListenerStream::new(TcpListener::from_std(sock.into()).unwrap());
 
     Server::builder()
         .concurrency_limit_per_connection(256)

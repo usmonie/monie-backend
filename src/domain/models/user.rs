@@ -1,22 +1,54 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use serde::{Deserialize, Serialize};
 
 use crate::domain::models::media::GraphicMediaCore;
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
 pub struct UserCore {
     pub id: String,
     pub name: String,
-
     pub avatar: Option<GraphicMediaCore>,
-    pub status: Option<String>,
+    pub about: Option<String>,
     pub username: Option<String>,
     pub phone: Option<String>,
     pub email: Option<String>,
+    pub created_at: u128,
 }
 
 impl UserCore {
-    fn is_anonymous(&self) -> bool {
-        self.phone == None && self.email == None
+    pub fn new(id: String, name: String) -> Self {
+        UserCore {
+            id,
+            name,
+            created_at: get_epoch_ms(),
+            avatar: None,
+            about: None,
+            username: None,
+            phone: None,
+            email: None,
+        }
     }
+    pub fn new_with_username(id: String, name: String, username: Option<String>) -> Self {
+        UserCore {
+            id,
+            name,
+            created_at: get_epoch_ms(),
+            avatar: None,
+            about: None,
+            username,
+            phone: None,
+            email: None,
+        }
+    }
+    fn is_anonymous(&self) -> bool {
+        self.phone.is_none() && self.email.is_none()
+    }
+}
+
+fn get_epoch_ms() -> u128 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_millis()
 }

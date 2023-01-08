@@ -17,7 +17,7 @@ service AuthenticationApi {
 }
 
 message PublicKeyResponse {
-  string id = 1;
+  string session_id = 1;
   string x = 2;
   string y = 3;
 }
@@ -37,23 +37,23 @@ message EnterCodeRequest {
 }
 
 message GenerateAnonymousResponse {
-  string id = 1;
+  string session_id = 1;
   string username = 2;
   bytes password = 3;
 }
 
 message GenerateAnonymousAccountRequest {
-  string id = 1;
+  string session_id = 1;
 }
 
 message LoginAnonymousRequest {
-  string id = 1;
+  string session_id = 1;
   string username = 2;
   bytes password = 3;
 }
 
 message CreateAnonymousAccountRequest {
-  string id = 1;
+  string session_id = 1;
 
   string username = 2;
   bytes password = 3;

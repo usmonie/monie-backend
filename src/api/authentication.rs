@@ -50,7 +50,7 @@ impl AuthenticationApi for AuthenticationService {
         let session = create_session(secret_key);
 
         let public_key = PublicKeyResponse {
-            id: session.0.to_string(),
+            session_id: session.0.to_string(),
             x: public_key.x.to_string(),
             y: public_key.y.to_string(),
         };
@@ -63,7 +63,7 @@ impl AuthenticationApi for AuthenticationService {
         request: Request<GenerateAnonymousAccountRequest>,
     ) -> Result<Response<GenerateAnonymousResponse>, Status> {
         let request = request.into_inner();
-        let uuid = Uuid::from_str(request.id.as_str()).unwrap();
+        let uuid = Uuid::from_str(request.session_id.as_str()).unwrap();
 
         if is_session_id_exist(&uuid).not() {
             return Err(Status::not_found(
@@ -81,7 +81,7 @@ impl AuthenticationApi for AuthenticationService {
         self.create_user(uuid.clone(), password.clone(), username.clone());
 
         Ok(Response::new(GenerateAnonymousResponse {
-            id: uuid.to_string(),
+            session_id: uuid.to_string(),
             username: username.to_string(),
             password: password.to_vec(),
         }))
@@ -92,7 +92,7 @@ impl AuthenticationApi for AuthenticationService {
         request: Request<CreateAnonymousAccountRequest>,
     ) -> Result<Response<UserResponse>, Status> {
         let request = request.into_inner();
-        let uuid = Uuid::from_str(request.id.as_str()).unwrap();
+        let uuid = Uuid::from_str(request.session_id.as_str()).unwrap();
 
         if is_session_id_exist(&uuid).not() {
             return Err(Status::not_found(

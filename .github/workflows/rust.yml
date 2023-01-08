@@ -15,7 +15,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+       - uses: actions/checkout@v2
+       - name: Cache protobuf library
+         id: cache-protobuf
+         uses: actions/cache@v1
+         with:
+           path: protobuf
+           key: ${{ runner.os }}-protobuf
+       - name: Build protobuf library
+         run: |
+           git clone https://github.com/protocolbuffers/protobuf.git
+           cd protobuf
+           git submodule update --init --recursive
+           ./autogen.sh
+           ./autogen.sh
+           ./configure
+           make
+           make check
+           sudo make install
+           sudo ldconfig
       - name: Build
         run: cargo build --verbose
       - name: Run tests

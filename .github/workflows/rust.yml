@@ -16,6 +16,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - name: Install tools
+        run: sudo apt-get install g++ git bazel
+
       - name: Cache protobuf library
         id: cache-protobuf
         uses: actions/cache@v1
@@ -23,7 +26,12 @@ jobs:
           path: protobuf
           key: ${{ runner.os }}-protobuf
       - name: Build protobuf library
-        run: sudo apt install protobuf-compiler
+        run: |
+          git clone https://github.com/protocolbuffers/protobuf.git
+          cd protobuf
+          git submodule update --init --recursive
+          bazel build :protoc :protobuf
+          cp bazel-bin/protoc /usr/local/bin
 
       - name: Build
         run: cargo build --verbose

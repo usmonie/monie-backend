@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use monie_rpc::monie::user::UserResponse;
 use crate::api::models::media::GraphicMedia;
+use monie_rpc::monie::user::UserResponse;
 
 use crate::domain::models::user::UserCore;
 
@@ -10,7 +10,7 @@ pub struct User {
     pub id: String,
     pub name: String,
     pub avatar: Option<GraphicMedia>,
-    pub status: Option<String>,
+    pub about: Option<String>,
     pub username: Option<String>,
     pub phone: Option<String>,
     pub email: Option<String>,
@@ -28,7 +28,7 @@ impl From<User> for UserResponse {
             id: user.id,
             name: user.name,
             avatar: user.avatar.map(|avatar| avatar.into()),
-            status: user.status,
+            status: user.about,
             username: user.username,
             phone: user.phone,
             email: user.email,
@@ -42,7 +42,7 @@ impl From<UserCore> for User {
             id: user.id,
             name: user.name,
             avatar: user.avatar.map(|avatar| avatar.into()),
-            status: user.status,
+            about: user.about,
             username: user.username,
             phone: user.phone,
             email: user.email,

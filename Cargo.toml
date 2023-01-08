@@ -9,8 +9,8 @@ members = ["rpc"]
 
 [dependencies]
 monie-rpc = { path = "rpc", version = "0.1.0" }
-enigma = { git = "https://github.com/usmonie/enigma" }
-e521_curve = { git = "https://github.com/usmonie/e521_curve" }
+enigma = { git = "https://github.com/niegram/enigma" }
+e521_curve = { git = "https://github.com/niegram/e521_curve" }
 
 async-trait = "0.1.59"
 dotenv = "0.15.0"

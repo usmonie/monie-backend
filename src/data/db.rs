@@ -1,7 +1,8 @@
-use async_trait::async_trait;
 use std::collections::HashMap;
+use std::process::id;
 use std::sync::Mutex;
 
+use async_trait::async_trait;
 use lazy_static::lazy_static;
 use names::{Generator, Name};
 use uuid::Uuid;
@@ -55,9 +56,7 @@ pub fn generate_new_username() -> String {
 pub fn create_session(session_key: Vec<u8>) -> (Uuid, Option<SessionCore>) {
     let mut uuid = Uuid::new_v4();
     let mut sessions = SESSIONS.lock().unwrap();
-    while sessions.contains_key(&uuid) {
-        uuid = Uuid::new_v4();
-    }
+
     return (
         uuid,
         sessions.insert(
@@ -91,35 +90,40 @@ pub fn get_username_id(username: &String) -> Option<Uuid> {
     username.copied()
 }
 
-pub fn store_temporary_username(username: &String, uuid: &Uuid) {}
+pub fn update_user_info(user_uuid: &Uuid, name: String, about: Option<String>) {
+    let mut users = USERS_SESSIONS.lock().unwrap();
+    if users.contains_key(user_uuid) {
+        let mut user_session = users.get(user_uuid).unwrap().clone();
+        let mut user = user_session.user;
+        user.name = name;
+        user.about = about;
 
-pub async fn store_user(
+        users.insert(
+            *user_uuid,
+            UserSessionCore {
+                user,
+                private_key: user_session.private_key,
+                hashed_password: user_session.hashed_password,
+                salt: user_session.salt,
+            },
+        );
+    }
+}
+
+pub fn create_user(
     session_uuid: &Uuid,
     name: String,
-    avatar: Option<GraphicMediaCore>,
-    status: Option<String>,
     username: Option<String>,
-    phone: Option<String>,
-    email: Option<String>,
-    private_key: &Vec<u8>,
     password: [u8; 64],
     salt: &Vec<u8>,
+    private_key: &Vec<u8>,
 ) {
+    dbg!("CREATING_USER");
+
     let mut users = USERS_SESSIONS.lock().unwrap();
     let mut user_uuid = Uuid::new_v4();
-    while users.contains_key(&user_uuid) {
-        user_uuid = Uuid::new_v4();
-    }
 
-    let user = UserCore {
-        id: user_uuid.to_string(),
-        name,
-        avatar,
-        status,
-        username,
-        phone,
-        email,
-    };
+    let user = UserCore::new_with_username(user_uuid.to_string(), name, username.clone());
 
     let user_session = UserSessionCore {
         user,
@@ -134,9 +138,18 @@ pub async fn store_user(
         session_key: session.session_key.clone(),
         user_id: Some(user_uuid),
     };
-    sessions.insert(*session_uuid, new_session);
 
+    dbg!(username.clone());
+    if username.is_some() {
+        let mut usernames = USERNAMES.lock().unwrap();
+        usernames.insert(username.unwrap(), user_uuid);
+        let _ = dbg!(usernames);
+    }
+
+    sessions.insert(*session_uuid, new_session);
     users.insert(user_uuid, user_session);
+    let _ = dbg!(sessions);
+    let _ = dbg!(users);
 }
 
 pub fn store_password(id: &Uuid, password: Vec<u8>, salt: Vec<u8>) {
@@ -150,4 +163,9 @@ pub fn store_password(id: &Uuid, password: Vec<u8>, salt: Vec<u8>) {
     };
 
     sessions.insert(*id, new_user_session);
+}
+
+pub fn get_user_by_id(user_uuid: &Uuid) -> UserSessionCore {
+    let users = USERS_SESSIONS.lock().unwrap();
+    return users.get(user_uuid).unwrap().clone();
 }

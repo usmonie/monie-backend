@@ -15,7 +15,7 @@ use uuid::{uuid, Uuid};
 
 use monie_rpc::monie::auth::authentication_api_server::AuthenticationApi;
 use monie_rpc::monie::auth::{
-    CodeResponse, CreateAnonymousRequest, EnterCodeRequest, EnterPhoneNumberRequest,
+    CodeResponse, CreateAnonymousAccountRequest, EnterCodeRequest, EnterPhoneNumberRequest,
     GenerateAnonymousAccountRequest, GenerateAnonymousResponse, LoginAnonymousRequest,
     PublicKeyRequest, PublicKeyResponse,
 };
@@ -23,10 +23,11 @@ use monie_rpc::monie::user::UserResponse;
 
 use crate::api::models::user::User;
 use crate::data::db::{
-    create_session, generate_new_username, get_user_session, get_username_id, is_session_id_exist,
-    is_user_exist_for_uuid, is_username_exist, store_user,
+    create_session, create_user, generate_new_username, get_user_by_id, get_user_session,
+    get_username_id, is_session_id_exist, is_user_exist_for_uuid, is_username_exist,
+    update_user_info,
 };
-use crate::data::passwords::{generate_password, PASSWORD_PEPPER};
+use crate::data::passwords::{generate_password, validate_password, PASSWORD_PEPPER};
 
 #[derive(Debug)]
 pub struct AuthenticationService {}
@@ -90,9 +91,51 @@ impl AuthenticationApi for AuthenticationService {
 
     async fn create_anonymous_account(
         &self,
-        request: Request<CreateAnonymousRequest>,
+        request: Request<CreateAnonymousAccountRequest>,
     ) -> Result<Response<UserResponse>, Status> {
-        todo!()
+        let request = request.into_inner();
+        let uuid = Uuid::from_str(request.id.as_str()).unwrap();
+
+        if is_session_id_exist(&uuid).not() {
+            return Err(Status::not_found(
+                "UUID not found, you need to create new one",
+            ));
+        }
+        let username = request.username;
+
+        if is_username_exist(&username).not() {
+            return Err(Status::not_found(
+                "Username not found, you need to create new one",
+            ));
+        }
+
+        let user_uuid = get_username_id(&username).unwrap();
+        let user_session = get_user_session(&user_uuid).unwrap();
+
+        let password = request.password;
+
+        return if verify_password(
+            user_session.hashed_password.as_slice(),
+            password.as_slice(),
+            user_session.salt.as_slice(),
+        ) {
+            let name = request.name;
+            let about = request.about;
+            update_user_info(
+                &Uuid::from_str(user_session.user.id.as_str()).unwrap(),
+                name,
+                about,
+            );
+
+            let user: User = get_user_by_id(&uuid).user.into();
+            let user_response: UserResponse = user.into();
+
+            Ok(Response::new(user_response))
+        } else {
+            Err(Status::permission_denied(
+                "Username or password is wrong, you need to create new one",
+            ))
+        };
     }
 
     async fn send_code_to_phone_number(
@@ -168,28 +211,23 @@ impl AuthenticationService {
     fn create_user(&self, uuid: Uuid, password: Arc<Vec<u8>>, username: Arc<String>) {
         thread::Builder::new()
             .spawn(move || {
-                move || {
-                    let salt = generate_salt();
-                    let salt = salt.as_slice();
+                let salt = generate_salt();
+                let salt = salt.as_slice();
 
-                    let password = Arc::clone(&password).to_vec();
-                    let password_encrypted =
-                        encrypt_password(password.as_slice(), salt, PASSWORD_PEPPER.as_bytes());
-                    let username = Arc::clone(&username).to_string();
+                let password = Arc::clone(&password).to_vec();
+                let password_encrypted =
+                    encrypt_password(password.as_slice(), salt, PASSWORD_PEPPER.as_bytes());
+                let username = Arc::clone(&username).to_string();
 
-                    store_user(
-                        &uuid,
-                        String::from("nie"),
-                        None,
-                        None,
-                        Some(username),
-                        None,
-                        None,
-                        &vec![],
-                        password_encrypted,
-                        &salt.to_vec(),
-                    );
-                }
+                dbg!("CREATE_USER");
+                create_user(
+                    &uuid,
+                    username.clone(),
+                    Some(username),
+                    password_encrypted,
+                    &salt.to_vec(),
+                    &vec![],
+                );
             })
             .unwrap();
     }
@@ -211,7 +249,7 @@ fn get_user(phone: String) -> User {
         id: Uuid::new_v4().to_string(),
         name: "nie".to_string(),
         avatar: None,
-        status: Some(String::from("YO CEO mNie")),
+        about: Some(String::from("YO CEO mNie")),
         username: Some(String::from("nie")),
         phone: Some(phone),
         email: Some(String::from("nie@usmonie.com")),

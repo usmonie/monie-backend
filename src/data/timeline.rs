@@ -12,6 +12,4 @@ lazy_static! {
     };
 }
 
-pub fn get_current_user_timeline() {
-    
-}
+pub fn get_current_user_timeline() {}

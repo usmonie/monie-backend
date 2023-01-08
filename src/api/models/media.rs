@@ -2,7 +2,9 @@ use serde::{Deserialize, Serialize};
 
 use monie_rpc::monie::media::{AudioResponse, GraphicResponse};
 
-use crate::domain::models::media::{AudioMediaCore, AudioMediaTypeCore, GraphicMediaCore, GraphicMediaTypeCore};
+use crate::domain::models::media::{
+    AudioMediaCore, AudioMediaTypeCore, GraphicMediaCore, GraphicMediaTypeCore,
+};
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug)]
 pub struct GraphicMedia {
@@ -21,18 +23,18 @@ pub struct GraphicMedia {
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug)]
 pub enum GraphicMediaType {
-    Video {
-        repeatable: bool,
-        duration: u64,
-    },
+    Video { repeatable: bool, duration: u64 },
     Image,
 }
 
 impl From<GraphicMedia> for GraphicResponse {
     fn from(graphic_media: GraphicMedia) -> Self {
         let (repeatable, duration) = match graphic_media.media_type {
-            GraphicMediaType::Video { repeatable, duration } => (repeatable, duration),
-            GraphicMediaType::Image => (false, 0)
+            GraphicMediaType::Video {
+                repeatable,
+                duration,
+            } => (repeatable, duration),
+            GraphicMediaType::Image => (false, 0),
         };
 
         Self {
@@ -71,7 +73,13 @@ impl From<GraphicMediaTypeCore> for GraphicMediaType {
     fn from(audio_media_type: GraphicMediaTypeCore) -> Self {
         match audio_media_type {
             GraphicMediaTypeCore::Image => GraphicMediaType::Image {},
-            GraphicMediaTypeCore::Video { repeatable, duration } => GraphicMediaType::Video { repeatable, duration }
+            GraphicMediaTypeCore::Video {
+                repeatable,
+                duration,
+            } => GraphicMediaType::Video {
+                repeatable,
+                duration,
+            },
         }
     }
 }
@@ -95,7 +103,6 @@ pub enum AudioMediaType {
     Audio,
     Music,
 }
-
 
 impl From<AudioMedia> for AudioResponse {
     fn from(audio_media: AudioMedia) -> Self {
@@ -132,7 +139,7 @@ impl From<AudioMediaTypeCore> for AudioMediaType {
     fn from(audio_media_type: AudioMediaTypeCore) -> Self {
         match audio_media_type {
             AudioMediaTypeCore::Audio => AudioMediaType::Audio {},
-            AudioMediaTypeCore::Music => AudioMediaType::Music {}
+            AudioMediaTypeCore::Music => AudioMediaType::Music {},
         }
     }
 }

@@ -1,13 +1,10 @@
 use std::collections::HashMap;
-use std::process::id;
 use std::sync::Mutex;
 
-use async_trait::async_trait;
 use lazy_static::lazy_static;
 use names::{Generator, Name};
 use uuid::Uuid;
 
-use crate::domain::models::media::GraphicMediaCore;
 use crate::domain::models::session::{SessionCore, UserSessionCore};
 use crate::domain::models::user::UserCore;
 
@@ -121,7 +118,7 @@ pub fn create_user(
     dbg!("CREATING_USER");
 
     let mut users = USERS_SESSIONS.lock().unwrap();
-    let mut user_uuid = Uuid::new_v4();
+    let user_uuid = Uuid::new_v4();
 
     let user = UserCore::new_with_username(user_uuid.to_string(), name, username.clone());
 

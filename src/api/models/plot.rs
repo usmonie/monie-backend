@@ -1,5 +1,7 @@
 use serde::Serialize;
+
 use monie_rpc::monie::timeline::{PlotResponse, StoryResponse};
+
 use crate::api::models::media::AudioMedia;
 use crate::api::models::story::Story;
 use crate::api::models::user::User;
@@ -35,7 +37,7 @@ impl From<PlotCore> for Plot {
             author: plot.author.into(),
             title: plot.title,
             description: plot.description,
-            soundtrack:  plot.soundtrack.map(|soundtrack| soundtrack.into()),
+            soundtrack: plot.soundtrack.map(|soundtrack| soundtrack.into()),
             stories: plot.stories.iter().map(|s| Story::from(s.clone())).collect(),
         }
     }

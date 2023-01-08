@@ -1,5 +1,3 @@
-extern crate core;
-
 use std::net::SocketAddr;
 
 use tokio::net::TcpListener;
@@ -42,7 +40,7 @@ async fn serve() {
         socket2::Type::STREAM,
         None,
     )
-    .unwrap();
+        .unwrap();
 
     let authentication_service = AuthenticationService {};
     let authentication_server = AuthenticationApiServer::new(authentication_service);

@@ -2,16 +2,14 @@ use std::ops::Not;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::thread;
-use std::thread::JoinHandle;
 
 use async_trait::async_trait;
 use e521_curve::e521::Point;
 use e521_curve::{generate_private_key, generate_public_key, generate_salt};
 use enigma::{decrypt_data, encrypt_password, verify_password};
 use num_bigint_dig::BigInt;
-use regex::internal::Input;
 use tonic::{Code, Request, Response, Status};
-use uuid::{uuid, Uuid};
+use uuid::Uuid;
 
 use monie_rpc::monie::auth::authentication_api_server::AuthenticationApi;
 use monie_rpc::monie::auth::{
@@ -27,7 +25,7 @@ use crate::data::db::{
     get_username_id, is_session_id_exist, is_user_exist_for_uuid, is_username_exist,
     update_user_info,
 };
-use crate::data::passwords::{generate_password, validate_password, PASSWORD_PEPPER};
+use crate::data::passwords::{generate_password, PASSWORD_PEPPER};
 
 #[derive(Debug)]
 pub struct AuthenticationService {}
@@ -118,16 +116,13 @@ impl AuthenticationApi for AuthenticationService {
             user_session.hashed_password.as_slice(),
             password.as_slice(),
             user_session.salt.as_slice(),
+            PASSWORD_PEPPER,
         ) {
             let name = request.name;
             let about = request.about;
-            update_user_info(
-                &Uuid::from_str(user_session.user.id.as_str()).unwrap(),
-                name,
-                about,
-            );
+            update_user_info(&user_uuid, name, about);
 
-            let user: User = get_user_by_id(&uuid).user.into();
+            let user: User = get_user_by_id(&user_uuid).user.into();
             let user_response: UserResponse = user.into();
 
             Ok(Response::new(user_response))
@@ -198,6 +193,7 @@ impl AuthenticationService {
                     session.hashed_password.as_slice(),
                     password.as_slice(),
                     session.salt.as_slice(),
+                    PASSWORD_PEPPER,
                 ) {
                     let user: User = session.user.into();
                     Ok(Response::new(user.into()))
@@ -216,7 +212,7 @@ impl AuthenticationService {
 
                 let password = Arc::clone(&password).to_vec();
                 let password_encrypted =
-                    encrypt_password(password.as_slice(), salt, PASSWORD_PEPPER.as_bytes());
+                    encrypt_password(password.as_slice(), salt, PASSWORD_PEPPER);
                 let username = Arc::clone(&username).to_string();
 
                 dbg!("CREATE_USER");

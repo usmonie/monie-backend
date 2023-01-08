@@ -1,7 +1,8 @@
-use crate::data::db::create_user;
-use crate::domain::models::media::GraphicMediaCore;
-use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
+
+use serde::{Deserialize, Serialize};
+
+use crate::domain::models::media::GraphicMediaCore;
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug)]
 pub struct UserCore {

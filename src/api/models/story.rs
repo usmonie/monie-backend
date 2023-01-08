@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 use monie_rpc::monie::timeline::StoryResponse;
+
 use crate::api::models::media::{AudioMedia, GraphicMedia};
 use crate::api::models::user::User;
 use crate::domain::models::story::StoryCore;
-
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug)]
 pub struct Story {

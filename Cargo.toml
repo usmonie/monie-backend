@@ -8,9 +8,9 @@ authors = ["Nie <nie@usmonie.com>"]
 members = ["rpc"]
 
 [dependencies]
-monie-rpc = { path = "rpc", version = "0.1.0" }
-enigma = { git = "https://github.com/niegram/enigma" }
 e521_curve = { git = "https://github.com/niegram/e521_curve" }
+enigma = { git = "https://github.com/niegram/enigma" }
+monie-rpc = { path = "rpc", version = "0.1.0" }
 
 async-trait = "0.1.59"
 dotenv = "0.15.0"
@@ -27,7 +27,7 @@ tonic-health = "0.8.0"
 tokio = { version = "1.5.0", features = ["full"] }
 tokio-stream = { version = "0.1.11", features = ["net"] }
 passwords = "3.1.12"
-serde = { version = "1.0.125" }
+serde = { version = "1.0.125", features = ["derive"] }
 socket2 = { version = "0.4", features = ["all"] }
 lazy_static = "1.4.0"
 uuid = { version = "1.2.2", features = ["v4"] }

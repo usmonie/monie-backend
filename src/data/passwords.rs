@@ -8,7 +8,8 @@ lazy_static! {
             .unwrap();
 }
 
-pub const PASSWORD_PEPPER: &str = "gkHbhXQG3JIbvyGjI1GfsMAxSQgnI1XesBcfT7GcznBi7Htbd7MD0gJlmYlC5t";
+pub const PASSWORD_PEPPER: &[u8] =
+    b"gkHbhXQG3JIbvyGjI1GfsMAxSQgnI1XesBcfT7GcznBi7Htbd7MD0gJlmYlC5t";
 
 pub fn validate_password(password: &str) -> bool {
     return PASSWORD_REGEX.is_match(password);
@@ -25,6 +26,6 @@ pub fn generate_password() -> String {
         exclude_similar_characters: true,
         strict: true,
     }
-    .generate_one()
-    .unwrap();
+        .generate_one()
+        .unwrap();
 }

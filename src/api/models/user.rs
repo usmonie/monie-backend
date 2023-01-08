@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use crate::api::models::media::GraphicMedia;
 use monie_rpc::monie::user::UserResponse;
 
+use crate::api::models::media::GraphicMedia;
 use crate::domain::models::user::UserCore;
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Debug)]
